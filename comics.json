@@ -1,0 +1,81 @@
+<h1>Gotham Guide: Batman Comic Recommender</h1>
+
+## Project Overview
+
+Gotham Guide is a PocketBeagle-based Batman comic recommender. The user selects a Batman rogue, a mood, or both. After the preferences are entered, a physical button connected to the PocketBeagle is intended to generate the final recommendation.
+
+The current software is structured as a working terminal prototype with a hardware-ready button class. The terminal version can run without the PocketBeagle, while the `ButtonInput` class is written so it can use GPIO on the PocketBeagle when the Adafruit_BBIO library is available.
+
+## Main Features
+
+- Local Batman recommendation database stored in JSON
+- Rogue-based recommendations
+- Mood-based recommendations
+- Combined rogue + mood filtering
+- Fallback recommendations when no exact match is found
+- PocketBeagle button input structure
+- Terminal output for the current prototype
+
+## Hardware
+
+Planned/current hardware:
+
+| Component | Purpose |
+|---|---|
+| PocketBeagle | Main development board |
+| Breadboard | Builds the button circuit |
+| Push button | Generates recommendation after preferences are entered |
+| Resistor | Pull-up or pull-down resistor for button circuit |
+| Jumper wires | Circuit connections |
+| USB cable | Powers the PocketBeagle |
+
+The button is intended to connect to a GPIO pin on the PocketBeagle. The code currently defaults to `P2_08`, but this can be changed in `main.py`.
+
+## Software Structure
+
+```text
+project_01/
+├── README.md
+├── run.sh
+├── requirements.txt
+├── docs/
+│   └── software_framework.md
+└── src/
+    ├── main.py
+    ├── button_input.py
+    ├── comic_database.py
+    ├── comics.json
+    ├── output_display.py
+    ├── recommendation_engine.py
+    └── user_menu.py
+```
+
+## How to Run
+
+From the `project_01` folder:
+
+```bash
+chmod 755 run.sh
+./run.sh
+```
+
+Or run directly:
+
+```bash
+python3 src/main.py
+```
+
+## Operation Instructions
+
+1. Start the Python program.
+2. Choose whether to select a rogue, a mood, or both.
+3. Enter the requested selection.
+4. Press the hardware button if running on the PocketBeagle.
+5. If running on a laptop or without GPIO, press Enter to simulate the button press.
+6. View the recommended comic output.
+
+## Notes
+
+The project uses a rule-based recommendation system, not a machine learning model. Each comic is tagged by rogue and mood. The recommendation engine filters the database based on the selected tags.
+
+The current version is a prototype. The terminal version is usable for testing the recommendation logic, while the PocketBeagle button code is included for hardware integration.
