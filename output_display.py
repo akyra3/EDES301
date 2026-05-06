@@ -1,49 +1,28 @@
 """
-button_input.py
+output_display.py
 
-Handles the recommendation button input.
-
-This class is written to work in two modes:
-1. PocketBeagle GPIO mode, if Adafruit_BBIO.GPIO is installed.
-2. Mock mode, where pressing Enter simulates the hardware button.
+Formats and displays recommendations.
 """
 
-import time
 
-try:
-    import Adafruit_BBIO.GPIO as GPIO
-    GPIO_AVAILABLE = True
-except ImportError:
-    GPIO_AVAILABLE = False
+class OutputDisplay:
+    def show_title(self):
+        print("\n==============================")
+        print(" Gotham Guide")
+        print(" Batman Comic Recommender")
+        print("==============================")
 
+    def show_recommendations(self, recommendations):
+        print("\nRecommendation output:")
 
-class ButtonInput:
-    def __init__(self, pin="P2_08", active_low=True, sleep_time=0.05):
-        self.pin = pin
-        self.active_low = active_low
-        self.sleep_time = sleep_time
-        self.mock_mode = not GPIO_AVAILABLE
-
-    def setup(self):
-        if self.mock_mode:
+        if not recommendations:
+            print("No recommendation found.")
             return
 
-        GPIO.setup(self.pin, GPIO.IN)
+        for index, comic in enumerate(recommendations, start=1):
+            print(f"\n{index}. {comic['title']}")
+            print(f"   Creators: {comic['creators']}")
+            print(f"   Reason: {comic['reason']}")
 
-    def wait_for_press(self):
-        if self.mock_mode:
-            input("\nPress Enter to simulate the PocketBeagle button...")
-            return True
-
-        pressed_value = 0 if self.active_low else 1
-
-        print("\nWaiting for PocketBeagle button press...")
-        while True:
-            if GPIO.input(self.pin) == pressed_value:
-                time.sleep(0.2)  # debounce
-                return True
-            time.sleep(self.sleep_time)
-
-    def cleanup(self):
-        if not self.mock_mode:
-            GPIO.cleanup()
+    def show_error(self, message):
+        print(f"Error: {message}")
