@@ -1,36 +1,61 @@
 """
-comic_database.py
+user_menu.py
 
-Loads and stores the local Batman comic recommendation database.
+Handles terminal menu input for rogue and mood selection.
 """
 
-import json
-from pathlib import Path
 
+class UserMenu:
+    def __init__(self, rogues, moods):
+        self.rogues = rogues
+        self.moods = moods
 
-class ComicDatabase:
-    def __init__(self, filename):
-        self.filename = Path(filename)
-        self.comics = []
+    def get_user_preferences(self):
+        print("\nChoose recommendation type:")
+        print("1. Rogue only")
+        print("2. Mood only")
+        print("3. Rogue and mood")
 
-    def load_comics(self):
-        with open(self.filename, "r", encoding="utf-8") as file:
-            self.comics = json.load(file)
-        return self.comics
+        choice = input("Enter 1, 2, or 3: ").strip()
 
-    def get_all_comics(self):
-        return self.comics
+        rogue = None
+        mood = None
 
-    def get_rogues(self):
-        rogues = set()
-        for comic in self.comics:
-            for rogue in comic.get("rogues", []):
-                rogues.add(rogue)
-        return sorted(rogues)
+        if choice in ["1", "3"]:
+            rogue = self.get_rogue_selection()
 
-    def get_moods(self):
-        moods = set()
-        for comic in self.comics:
-            for mood in comic.get("moods", []):
-                moods.add(mood)
-        return sorted(moods)
+        if choice in ["2", "3"]:
+            mood = self.get_mood_selection()
+
+        return rogue, mood
+
+    def get_rogue_selection(self):
+        print("\nAvailable rogues:")
+
+        for index, rogue in enumerate(self.rogues, start=1):
+            print(f"{index}. {rogue}")
+
+        selection = input("Select a rogue by number: ").strip()
+        return self._select_from_list(selection, self.rogues)
+
+    def get_mood_selection(self):
+        print("\nAvailable moods:")
+
+        for index, mood in enumerate(self.moods, start=1):
+            print(f"{index}. {mood}")
+
+        selection = input("Select a mood by number: ").strip()
+        return self._select_from_list(selection, self.moods)
+
+    def _select_from_list(self, selection, options):
+        try:
+            index = int(selection) - 1
+
+            if 0 <= index < len(options):
+                return options[index]
+
+        except ValueError:
+            pass
+
+        print("Invalid selection. Defaulting to no selection.")
+        return None
