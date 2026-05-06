@@ -1,44 +1,65 @@
 """
-recommendation_engine.py
+main.py
 
-Contains the rule-based Batman comic recommendation logic.
+Main controller for the Gotham Guide Batman comic recommender.
 """
 
+from pathlib import Path
 
-class RecommendationEngine:
-    def __init__(self, comics):
-        self.comics = comics
+from button_input import ButtonInput
+from comic_database import ComicDatabase
+from output_display import OutputDisplay
+from recommendation_engine import RecommendationEngine
+from user_menu import UserMenu
 
-    def recommend(self, rogue=None, mood=None):
-        rogue = rogue.strip().lower() if rogue else None
-        mood = mood.strip().lower() if mood else None
 
-        matches = []
+class MainController:
+    def __init__(self):
+        current_dir = Path(__file__).parent
+        database_path = current_dir / "comics.json"
 
-        for comic in self.comics:
-            comic_rogues = [r.lower() for r in comic.get("rogues", [])]
-            comic_moods = [m.lower() for m in comic.get("moods", [])]
+        self.database = ComicDatabase(database_path)
+        self.display = OutputDisplay()
+        self.button = ButtonInput(pin="P2_08", active_low=True)
 
-            rogue_match = rogue in comic_rogues if rogue else True
-            mood_match = mood in comic_moods if mood else True
+    def run(self):
+        self.display.show_title()
 
-            if rogue_match and mood_match:
-                matches.append(comic)
+        try:
+            comics = self.database.load_comics()
+            engine = RecommendationEngine(comics)
+            menu = UserMenu(
+                rogues=self.database.get_rogues(),
+                moods=self.database.get_moods()
+            )
 
-        if matches:
-            return matches
+            self.button.setup()
 
-        return self.fallback_recommendation(mood)
+            keep_running = True
 
-    def fallback_recommendation(self, mood=None):
-        if mood:
-            mood = mood.lower()
-            mood_matches = [
-                comic for comic in self.comics
-                if mood in [m.lower() for m in comic.get("moods", [])]
-            ]
-            if mood_matches:
-                return mood_matches
+            while keep_running:
+                rogue, mood = menu.get_user_preferences()
 
-        # Final fallback if nothing matches.
-        return [self.comics[0]] if self.comics else []
+                print("\nSelected preferences:")
+                print(f"Rogue: {rogue if rogue else 'None'}")
+                print(f"Mood: {mood if mood else 'None'}")
+
+                self.button.wait_for_press()
+
+                recommendations = engine.recommend(rogue=rogue, mood=mood)
+                self.display.show_recommendations(recommendations)
+
+                again = input("\nGenerate another recommendation? (y/n): ").strip().lower()
+                keep_running = again == "y"
+
+        except KeyboardInterrupt:
+            print("\nProgram stopped by user.")
+
+        finally:
+            self.button.cleanup()
+            print("\nGotham Guide shut down.")
+
+
+if __name__ == "__main__":
+    controller = MainController()
+    controller.run()
